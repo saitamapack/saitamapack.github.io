@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 </head>
 <body>
-    <h1>1Football Matches Update</h1>
+    <h1>2Football Matches Update</h1>
     <div id="result"></div>
     <div id="matches"></div>
     <script>
@@ -51,7 +51,7 @@
 
                 // Step 1: Load JSON from Cloudinary
                 const jsonUrl = `https://res.cloudinary.com/dqzelggjc/raw/upload/matches.json`;
-                const matches = await fetchData(jsonUrl);
+                const matches = await fetch(jsonUrl);
 
                 // Step 2: Remove matches older than yesterday
                 const yesterday = new Date();
