@@ -7,18 +7,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 </head>
 <body>
-    <h1>2Football Matches Update</h1>
+    <h1>Football Matches Update</h1>
     <div id="result"></div>
     <div id="matches"></div>
     <script>
-        async function fetchData(url, headers = {}) {
-            const response = await fetch(url, { headers });
-            if (!response.ok) {
-                throw new Error(`Failed to fetch data from ${url}`);
-            }
-            return await response.json();
-        }
-
         async function uploadFile(url, file, params) {
             const formData = new FormData();
             for (const [key, value] of Object.entries(params)) {
@@ -41,17 +33,18 @@
         async function processMatches() {
             try {
                 // Cloudinary credentials
-                const cloudinaryCloudName = "dqzelggjc";
-                const cloudinaryApiKey = "128433947257472";
-                const cloudinaryApiSecret = "hmoYrAusm9CfLjv1uX69kfE-dbI";
+                const cloudinaryCloudName = "ds8s4fn5p";
+                const cloudinaryApiKey = "731143319737329";
+                const cloudinaryApiSecret = "HD479cTPf2KY6iI7LEuJzrvNTpM";
                 const uploadPreset = "ml_default";
 
                 // File path to matches.json on Cloudinary
-                const matchesFile = 'matches.json';
-
-                // Step 1: Load JSON from Cloudinary
-                const jsonUrl = `https://res.cloudinary.com/dqzelggjc/raw/upload/matches.json`;
-                const matches = await fetch(jsonUrl);
+                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/matches.json`;
+                const response = await fetch(jsonUrl);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch JSON data from Cloudinary.');
+                }
+                const matches = await response.json();
 
                 // Step 2: Remove matches older than yesterday
                 const yesterday = new Date();
@@ -117,7 +110,7 @@
 
         async function fetchMatches() {
             try {
-                const jsonUrl = 'https://res.cloudinary.com/dqzelggjc/raw/upload/results.json';
+                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/results2.json`;
                 const response = await fetch(jsonUrl);
 
                 if (!response.ok) {
