@@ -7,8 +7,112 @@
 </head>
 <body>
     <h1>Football Matches Update</h1>
-    <div id="matches"></div>
+    <div id="result"></div>
     <script>
+        async function fetchData(url, headers = {}) {
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                throw new Error(`Failed to fetch data from ${url}`);
+            }
+            return await response.json();
+        }
+
+        async function uploadFile(url, file, params) {
+            const formData = new FormData();
+            for (const [key, value] of Object.entries(params)) {
+                formData.append(key, value);
+            }
+            formData.append('file', file);
+
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload file to Cloudinary.');
+            }
+
+            return await response.json();
+        }
+
+        async function processMatches() {
+            try {
+                // Cloudinary credentials
+                const cloudinaryCloudName = "dqzelggjc";
+                const cloudinaryApiKey = "128433947257472";
+                const cloudinaryApiSecret = "hmoYrAusm9CfLjv1uX69kfE-dbI";
+                const uploadPreset = "ml_default";
+
+                // File path to matches.json on Cloudinary
+                const matchesFile = 'matches.json';
+
+                // Step 1: Load JSON from Cloudinary
+                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/${matchesFile}`;
+                const matches = await fetchData(jsonUrl);
+
+                // Step 2: Remove matches older than yesterday
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 2);
+
+                const filteredMatches = matches.filter(match => {
+                    const matchDate = new Date(match.match_date);
+                    return matchDate > yesterday;
+                });
+
+                // Step 3: Process each remaining match
+                for (const match of filteredMatches) {
+                    const matchUrl = match.match_url;
+                    const html = await fetch(matchUrl).then(response => response.text());
+
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const mainResultDiv = doc.querySelector('.main-result');
+
+                    if (mainResultDiv) {
+                        const scores = mainResultDiv.querySelectorAll('b');
+                        if (scores.length >= 2) {
+                            match.score1 = parseInt(scores[0].textContent, 10);
+                            match.score2 = parseInt(scores[1].textContent, 10);
+                        }
+                    } else {
+                        match.score1 = 0;
+                        match.score2 = 0;
+                    }
+                }
+
+                // Step 4: Save updated matches to a temporary file
+                const tempFile = new Blob([JSON.stringify(filteredMatches, null, 2)], { type: 'application/json' });
+
+                // Step 5: Upload updated matches.json to Cloudinary
+                const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/auto/upload`;
+                const timestamp = Math.floor(Date.now() / 1000);
+                const publicId = 'results2.json';
+                const signature = CryptoJS.SHA1(`invalidate=true&public_id=${publicId}&timestamp=${timestamp}&upload_preset=${uploadPreset}${cloudinaryApiSecret}`).toString();
+
+                const uploadResponse = await uploadFile(cloudinaryUrl, tempFile, {
+                    upload_preset: uploadPreset,
+                    timestamp: timestamp,
+                    api_key: cloudinaryApiKey,
+                    signature: signature,
+                    invalidate: 'true',
+                    public_id: publicId
+                });
+
+                document.getElementById('result').innerText = "Data successfully saved and uploaded to Cloudinary!";
+                console.log(uploadResponse);
+
+                // Display JSON result
+                const pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(filteredMatches, null, 2);
+                document.body.appendChild(pre);
+
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerText = `Error: ${error.message}`;
+            }
+        }
+
         async function fetchMatches() {
             try {
                 const jsonUrl = 'https://res.cloudinary.com/dqzelggjc/raw/upload/results.json';
@@ -22,7 +126,7 @@
                 displayMatches(matches);
             } catch (error) {
                 console.error('Error:', error);
-                document.getElementById('matches').innerText = `Error: ${error.message}`;
+                document.getElementById('result').innerText = `Error: ${error.message}`;
             }
         }
 
@@ -47,6 +151,7 @@
             });
         }
 
+        processMatches();
         fetchMatches();
     </script>
 </body>
