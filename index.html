@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Football Matches Update</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
 </head>
 <body>
-    <h1>Football Matches Update</h1>
+    <h1>1Football Matches Update</h1>
     <div id="result"></div>
+    <div id="matches"></div>
     <script>
         async function fetchData(url, headers = {}) {
             const response = await fetch(url, { headers });
@@ -48,8 +50,8 @@
                 const matchesFile = 'matches.json';
 
                 // Step 1: Load JSON from Cloudinary
-                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/${matchesFile}`;
-                const matches = await fetch(jsonUrl);
+                const jsonUrl = `https://res.cloudinary.com/dqzelggjc/raw/upload/matches.json`;
+                const matches = await fetchData(jsonUrl);
 
                 // Step 2: Remove matches older than yesterday
                 const yesterday = new Date();
