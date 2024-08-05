@@ -49,7 +49,7 @@
 
                 // Step 1: Load JSON from Cloudinary
                 const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/${matchesFile}`;
-                const matches = await fetchData(jsonUrl);
+                const matches = await fetch(jsonUrl);
 
                 // Step 2: Remove matches older than yesterday
                 const yesterday = new Date();
