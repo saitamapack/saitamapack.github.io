@@ -2,153 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Matches Update</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
+    <title>Call PHP Page with AJAX</title>
+    <script>
+        function callPHP() {
+            var xhr = new XMLHttpRequest();
+            var url = "try1.php";
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    document.getElementById("response").innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+    </script>
 </head>
 <body>
-    <h1>Football Matches Update</h1>
-    <div id="result"></div>
-    <div id="matches"></div>
-    <script>
-        async function uploadFile(url, file, params) {
-            const formData = new FormData();
-            for (const [key, value] of Object.entries(params)) {
-                formData.append(key, value);
-            }
-            formData.append('file', file);
-
-            const response = await fetch(url, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to upload file to Cloudinary.');
-            }
-
-            return await response.json();
-        }
-
-        async function processMatches() {
-            try {
-                // Cloudinary credentials
-                const cloudinaryCloudName = "ds8s4fn5p";
-                const cloudinaryApiKey = "731143319737329";
-                const cloudinaryApiSecret = "HD479cTPf2KY6iI7LEuJzrvNTpM";
-                const uploadPreset = "ml_default";
-
-                // File path to matches.json on Cloudinary
-                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/results.json`;
-                const response = await fetch(jsonUrl);
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch JSON data from Cloudinary results1.');
-                }
-                const matches = await response.json();
-
-                // Step 2: Remove matches older than yesterday
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 2);
-
-                const filteredMatches = matches.filter(match => {
-                    const matchDate = new Date(match.match_date);
-                    return matchDate > yesterday;
-                });
-
-                // Step 3: Process each remaining match
-                for (const match of filteredMatches) {
-                    const matchUrl = match.match_url;
-                    const html = await fetch(matchUrl).then(response => response.text());
-
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const mainResultDiv = doc.querySelector('.main-result');
-
-                    if (mainResultDiv) {
-                        const scores = mainResultDiv.querySelectorAll('b');
-                        if (scores.length >= 2) {
-                            match.score1 = parseInt(scores[0].textContent, 10);
-                            match.score2 = parseInt(scores[1].textContent, 10);
-                        }
-                    } else {
-                        match.score1 = 0;
-                        match.score2 = 0;
-                    }
-                }
-
-                // Step 4: Save updated matches to a temporary file
-                const tempFile = new Blob([JSON.stringify(filteredMatches, null, 2)], { type: 'application/json' });
-
-                // Step 5: Upload updated matches.json to Cloudinary
-                const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/auto/upload`;
-                const timestamp = Math.floor(Date.now() / 1000);
-                const publicId = 'results2.json';
-                const signature = CryptoJS.SHA1(`invalidate=true&public_id=${publicId}&timestamp=${timestamp}&upload_preset=${uploadPreset}${cloudinaryApiSecret}`).toString();
-
-                const uploadResponse = await uploadFile(cloudinaryUrl, tempFile, {
-                    upload_preset: uploadPreset,
-                    timestamp: timestamp,
-                    api_key: cloudinaryApiKey,
-                    signature: signature,
-                    invalidate: 'true',
-                    public_id: publicId
-                });
-
-                document.getElementById('result').innerText = "Data successfully saved and uploaded to Cloudinary!";
-                console.log(uploadResponse);
-
-                // Display JSON result
-                const pre = document.createElement('pre');
-                pre.textContent = JSON.stringify(filteredMatches, null, 2);
-                document.body.appendChild(pre);
-
-            } catch (error) {
-                console.error("Error:", error);
-                document.getElementById('result').innerText = `Error: ${error.message}`;
-            }
-        }
-
-        async function fetchMatches() {
-            try {
-                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/results.json`;
-                const response = await fetch(jsonUrl);
-
-                if (!response.ok) {
-                    throw new Error('Failed to fetch JSON data from Cloudinary.');
-                }
-
-                const matches = await response.json();
-                displayMatches(matches);
-            } catch (error) {
-                console.error('Error:', error);
-                document.getElementById('result').innerText = `Error: ${error.message}`;
-            }
-        }
-
-        function displayMatches(matches) {
-            const matchesDiv = document.getElementById('matches');
-            matchesDiv.innerHTML = '';
-
-            matches.forEach(match => {
-                const matchDiv = document.createElement('div');
-                matchDiv.classList.add('match');
-
-                const date = new Date(match.match_date);
-                const formattedDate = date.toLocaleDateString();
-
-                matchDiv.innerHTML = `
-                    <h2>${match.team1} vs ${match.team2}</h2>
-                    <p>Date: ${formattedDate}</p>
-                    <p>Score: ${match.score1} - ${match.score2}</p>
-                `;
-
-                matchesDiv.appendChild(matchDiv);
-            });
-        }
-
-        processMatches();
-        fetchMatches();
-    </script>
+    <button type="button" onclick="callPHP()">Call PHP Page</button>
+    <div id="response"></div>
 </body>
 </html>
