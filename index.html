@@ -2,23 +2,48 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Call PHP Page with AJAX</title>
-    <script>
-        function callPHP() {
-            var xhr = new XMLHttpRequest();
-            var url = "try1.php";
-            xhr.open("GET", url, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    document.getElementById("response").innerHTML = xhr.responseText;
-                }
-            };
-            xhr.send();
-        }
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload JSON to Cloudinary</title>
 </head>
 <body>
-    <button type="button" onclick="callPHP()">Call PHP Page</button>
-    <div id="response"></div>
+    <input type="file" id="fileInput" accept=".json">
+    <button onclick="uploadFile()">Upload JSON</button>
+
+    <script>
+        const cloudinaryCloudName = "ds8s4fn5p";
+        const cloudinaryApiKey = "731143319737329";
+        const cloudinaryApiSecret = "HD479cTPf2KY6iI7LEuJzrvNTpM";
+        const uploadPreset = "ml_default";
+
+        function uploadFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', uploadPreset);
+            formData.append('public_id', 'rr3'); // Public ID
+            formData.append('invalidate', 'true'); // Invalidate cached versions
+
+            fetch(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/upload`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('File uploaded successfully:', data);
+                alert('File uploaded successfully!');
+            })
+            .catch(error => {
+                console.error('Error uploading file:', error);
+                alert('Error uploading file');
+            });
+        }
+    </script>
 </body>
 </html>
