@@ -42,7 +42,7 @@
                 const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/matches.json`;
                 const response = await fetch(jsonUrl);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch JSON data from Cloudinary.');
+                    throw new Error('Failed to fetch JSON data from Cloudinary results1.');
                 }
                 const matches = await response.json();
 
@@ -110,7 +110,7 @@
 
         async function fetchMatches() {
             try {
-                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/results2.json`;
+                const jsonUrl = `https://res.cloudinary.com/${cloudinaryCloudName}/raw/upload/results.json`;
                 const response = await fetch(jsonUrl);
 
                 if (!response.ok) {
